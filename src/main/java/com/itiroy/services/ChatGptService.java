@@ -1,5 +1,7 @@
 package com.itiroy.services;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.itiroy.vo.request.ChatGptRequest;
 import com.itiroy.vo.response.ChatGptResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,13 +26,15 @@ public class ChatGptService implements Serializable {
     @Autowired
     private RestTemplate template;
 
-    public Object chat(String prompt){
+    public Object chat(String prompt) throws JsonProcessingException {
         logger.info("Starting chat with prompt: " + prompt);
         ChatGptRequest request = new ChatGptRequest(model, prompt);
+
+        String jsonString = new ObjectMapper().writeValueAsString(request);
 
         logger.info("Processing prompt...");
         ChatGptResponse response = template.postForObject(url, request, ChatGptResponse.class);
 
-        return response;
+        return response.getChoices().get(0).getMessage().getContent();
     }
 }
